@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>hackgraph — GovTechHack26 projects</title>
+    <style>
+        :root {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color-scheme: light dark;
+        }
+        body {
+            max-width: 60rem;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            line-height: 1.5;
+        }
+        h1 {
+            margin-bottom: 0.25rem;
+        }
+        #status {
+            color: gray;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th,
+        td {
+            text-align: left;
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+            vertical-align: top;
+        }
+        th {
+            font-weight: 600;
+        }
+        td:first-child {
+            white-space: nowrap;
+            color: gray;
+        }
+        a {
+            color: #2563eb;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+<h1>GovTech Hackathon 2026 — Projects</h1>
+<p id="status">Loading…</p>
+<p>
+    A knowledge graph built in your browser from the
+    <a href="https://govtech.digisus-lab.ch/api/event/2/datapackage.json"
+       target="_blank"
+       rel="noopener"
+    >dribdat datapackage</a>
+    and serialised as Turtle
+    (<a id="download" href="#" hidden>download data.ttl</a>).
+</p>
+<table id="projects">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>URL</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>
