@@ -5,7 +5,8 @@
 // -> schema:Project nodes), serialises it to Turtle, and renders the projects
 // as a simple table. The serialised Turtle is also offered as a download.
 
-import { newStore, addTriple, storeToTurtle, turtleToDataset, prefixes, a } from "@foerderfunke/sem-ops-utils/core"
+import { newStore, addTriple, storeToTurtle, prefixes, a } from "@foerderfunke/sem-ops-utils/core"
+import { sparqlSelect } from "@foerderfunke/sem-ops-utils/sparql"
 
 const API = "https://govtech.digisus-lab.ch/api/event/2/datapackage.json"
 const SCHEMA = prefixes.schema // http://schema.org/
@@ -27,23 +28,17 @@ function buildStore(datapackage) {
     return store
 }
 
-// Turn the parsed RDF dataset into one row per schema:Project.
-function projectsFromDataset(dataset) {
-    const bySubject = new Map()
-    for (const quad of dataset) {
-        const s = quad.subject.value
-        if (!bySubject.has(s)) {
-            bySubject.set(s, { isProject: false, id: null, name: null, url: null })
+async function extractProjectsFromStore(store) {
+    const query = `
+        PREFIX schema: <${SCHEMA}>
+        SELECT ?id ?name ?url WHERE {
+            ?project a schema:Project .
+            OPTIONAL { ?project schema:identifier ?id }
+            OPTIONAL { ?project schema:name ?name }
+            OPTIONAL { ?project schema:url ?url }
         }
-        const row = bySubject.get(s)
-        const p = quad.predicate.value
-        const o = quad.object.value
-        if (p === TYPE && o === `${SCHEMA}Project`) row.isProject = true
-        else if (p === `${SCHEMA}identifier`) row.id = o
-        else if (p === `${SCHEMA}name`) row.name = o
-        else if (p === `${SCHEMA}url`) row.url = o
-    }
-    return [...bySubject.values()].filter((r) => r.isProject)
+        ORDER BY ?id`
+    return await sparqlSelect(query, [store])
 }
 
 function renderTable(projects) {
@@ -92,13 +87,10 @@ async function main() {
         const datapackage = await res.json()
 
         const store = buildStore(datapackage)
-        const turtle = await storeToTurtle(store)
-
-        const projects = projectsFromDataset(turtleToDataset(turtle))
-        projects.sort((x, y) => Number(x.id) - Number(y.id))
+        const projects = await extractProjectsFromStore(store)
 
         renderTable(projects)
-        offerTurtleDownload(turtle)
+        offerTurtleDownload(await storeToTurtle(store))
         status.textContent = `${projects.length} projects — knowledge graph built from the dribdat API`
     } catch (err) {
         status.textContent = `Failed to build knowledge graph: ${err.message}`
